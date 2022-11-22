@@ -33,9 +33,51 @@ async function run(){
         })
 
         //Reviews API
+        app.get('/reviews', async(req, res) =>{
+            let query = {};
+            if(req.query.email){
+                query = {
+                    email: req.query.email
+                }
+            }
+            const cursor = reviewCollection.find(query);
+            const reviews = await cursor.toArray();
+            res.send(reviews);
+        })
+
         app.post('/reviews', async(req, res) =>{
             const review = req.body;
             const result = await reviewCollection.insertOne(review);
+            res.send(result);
+        });
+
+        //Review Update API
+        app.put('/reviews/:id', async(req, res)=>{
+            const id = req.params.id;
+            const filter = {_id: ObjectId(id)}
+            const review = req.body;
+            const option = {upsert: true}
+            console.log(review);
+            const updatedReview = {
+                $set: {
+                    review: review.review,
+                }
+            }
+            const result = await reviewCollection.updateOne(filter, updatedReview, option);
+            res.send(result)
+        })
+
+        app.delete('/reviews/:id', async(req, res)=>{
+            const id = req.params.id;
+            const query = {_id: ObjectId(id)};
+            const result = await reviewCollection.deleteOne(query);
+            res.send(result);
+        })
+
+        app.get('/reviews/:id', async(req, res)=>{
+            const id = req.params.id;
+            const query = {_id: ObjectId(id)};
+            const result = await reviewCollection.findOne(query);
             res.send(result);
         })
     }
